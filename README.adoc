@@ -1,0 +1,52 @@
+= PLAYING WITH ISTIO
+
+
+
+== Installing Minishift and Istio
+curl -L https://git.io/getLatestIstio | sh -
+export PATH="$PATH:/Users/robbert/istio-1.0.6/bin"
+cd istio-1.0.6/
+oc login -u system:admin
+
+oc adm policy add-scc-to-user anyuid -z istio-egressgateway-service-account -n istio-system
+oc adm policy add-scc-to-user anyuid -z istio-citadel-service-account -n istio-system
+oc adm policy add-scc-to-user anyuid -z istio-ingressgateway-service-account -n istio-system
+oc adm policy add-scc-to-user anyuid -z istio-cleanup-old-ca-service-account -n istio-system
+oc adm policy add-scc-to-user anyuid -z istio-mixer-post-install-account -n istio-system
+oc adm policy add-scc-to-user anyuid -z istio-mixer-service-account -n istio-system
+oc adm policy add-scc-to-user anyuid -z istio-pilot-service-account -n istio-system
+oc adm policy add-scc-to-user anyuid -z istio-sidecar-injector-service-account -n istio-system
+oc adm policy add-scc-to-user anyuid -z default -n istio-system
+oc adm policy add-scc-to-user anyuid -z istio-galley-service-account -n istio-system
+oc adm policy add-scc-to-user anyuid -z prometheus -n istio-system
+
+oc apply -f install/kubernetes/helm/istio/templates/crds.yaml
+oc apply -f install/kubernetes/istio-demo-auth.yaml
+oc project istio-system
+oc get svc -n istio-system
+oc get pods -n istio-system
+
+#
+kubectl label namespace default istio-injection=enabled --overwrite
+
+== Delete only Istio:
+oc delete -f install/kubernetes/istio-demo-auth.yaml
+
+
+== Reinstall minishift:
+minishift delete
+rm -rf ~.minishift/
+rm -rf ~/.kube
+brew cask install minishift
+brew cask reinstall minishift
+minishift start --memory 8GB
+
+(login op https://192.168.64.6:8443/console als developer/anypass  of syste/admin )
+
+
+
+
+References:
+https://istio.io/docs/setup/kubernetes/quick-start/
+https://medium.com/devopslinks/istio-step-by-step-part-03-deploying-an-application-with-istio-in-kubernetes-d2b1de64fb6b
+
