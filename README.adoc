@@ -50,7 +50,7 @@ minishift start --memory 8GB
 
 
 
-References:
+== References:
 link:https://istio.io/docs/setup/kubernetes/quick-start/:[https://istio.io/docs/setup/kubernetes/quick-start/] +
 link:https://medium.com/devopslinks/istio-step-by-step-part-03-deploying-an-application-with-istio-in-kubernetes-d2b1de64fb6b:[https://medium.com/devopslinks/istio-step-by-step-part-03-deploying-an-application-with-istio-in-kubernetes-d2b1de64fb6b]
 
