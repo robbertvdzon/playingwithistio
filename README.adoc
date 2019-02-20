@@ -11,9 +11,10 @@ minishift start --memory 8GB
 
 == Installing Minishift and Istio
 ```
+cd
 curl -L https://git.io/getLatestIstio | sh -
 export PATH="$PATH:/Users/robbert/istio-1.0.6/bin"
-cd istio-1.0.6/
+cd ~/istio-1.0.6/
 oc login -u system:admin
 
 oc adm policy add-scc-to-user anyuid -z istio-egressgateway-service-account -n istio-system
@@ -24,52 +25,36 @@ oc adm policy add-scc-to-user anyuid -z istio-mixer-post-install-account -n isti
 oc adm policy add-scc-to-user anyuid -z istio-mixer-service-account -n istio-system
 oc adm policy add-scc-to-user anyuid -z istio-pilot-service-account -n istio-system
 oc adm policy add-scc-to-user anyuid -z istio-sidecar-injector-service-account -n istio-system
-oc adm policy add-scc-to-user anyuid -z default -n istio-system
 oc adm policy add-scc-to-user anyuid -z istio-galley-service-account -n istio-system
 oc adm policy add-scc-to-user anyuid -z prometheus -n istio-system
+oc adm policy add-scc-to-user privileged -z default -n myproject
 
 oc apply -f install/kubernetes/helm/istio/templates/crds.yaml
 oc apply -f install/kubernetes/istio-demo-auth.yaml
-oc project istio-system
 oc get svc -n istio-system
 oc get pods -n istio-system
 
-#
-kubectl label namespace default istio-injection=enabled --overwrite
 ```
 
-== Test 1 : Deploy sample pods without sidecar
+== Test: Deploy sample pods with sidecar
 ```
 cd service1
 ./mvnw package
-
-oc login https://192.168.64.8:8443 --token=XXXXXXXXXX (copy from web)
-eval $(minishift docker-env)
-docker build -t service1:v1 .
-minishift ssh docker images | grep service1
-oc create -f openshift-scripts/deployconfig.yml -n myproject
-
-```
-
-== Test 2 : Remove sample pods
-oc delete -f openshift-scripts/deployconfig.yml -n myproject
-
-
-== Test 3: Deploy sample pods with sidecar
-```
-cd service1
-./mvnw package
-
-oc login https://192.168.64.8:8443 --token=XXXXXXXXXX (copy from web)
+oc login -u system:admin
 eval $(minishift docker-env)
 docker build -t service1:v1 .
 minishift ssh docker images | grep service1
 
 export PATH="$PATH:~/istio-1.0.6/bin"
-kubectl label namespace default istio-injection=enabled --overwrite
+#kubectl label namespace default istio-injection=enabled --overwrite
 istioctl kube-inject -f openshift-scripts/deployconfig.yml | oc create -n myproject -f -
+# Note: running without the sidecar would be like this: oc create -f openshift-scripts/deployconfig.yml -n myproject
 
 ```
+
+== Delete the sample pods
+oc delete -f openshift-scripts/deployconfig.yml -n myproject
+
 
 
 == Delete Istio on minishift:
