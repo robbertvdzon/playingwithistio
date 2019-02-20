@@ -1,6 +1,13 @@
 = PLAYING WITH ISTIO
 
 
+== Install minishift:
+```
+brew cask install minishift
+brew cask reinstall minishift
+minishift start --memory 8GB
+```
+(login op https://192.168.64.6:8443/console als developer/anypass  of syste/admin )
 
 == Installing Minishift and Istio
 ```
@@ -31,21 +38,51 @@ oc get pods -n istio-system
 kubectl label namespace default istio-injection=enabled --overwrite
 ```
 
-== Delete only Istio:
+== Test 1 : Deploy sample pods without sidecar
+```
+cd service1
+./mvnw package
+
+oc login https://192.168.64.8:8443 --token=XXXXXXXXXX (copy from web)
+eval $(minishift docker-env)
+docker build -t service1:v1 .
+minishift ssh docker images | grep service1
+oc create -f openshift-scripts/deployconfig.yml -n myproject
+
+```
+
+== Test 2 : Remove sample pods
+oc delete -f openshift-scripts/deployconfig.yml -n myproject
+
+
+== Test 3: Deploy sample pods with sidecar
+```
+cd service1
+./mvnw package
+
+oc login https://192.168.64.8:8443 --token=XXXXXXXXXX (copy from web)
+eval $(minishift docker-env)
+docker build -t service1:v1 .
+minishift ssh docker images | grep service1
+
+export PATH="$PATH:~/istio-1.0.6/bin"
+kubectl label namespace default istio-injection=enabled --overwrite
+istioctl kube-inject -f openshift-scripts/deployconfig.yml | oc create -n myproject -f -
+
+```
+
+
+== Delete Istio on minishift:
 ```
 oc delete -f install/kubernetes/istio-demo-auth.yaml
 ```
 
-== Reinstall minishift:
+== Delete minishift:
 ```
 minishift delete
 rm -rf ~.minishift/
 rm -rf ~/.kube
-brew cask install minishift
-brew cask reinstall minishift
-minishift start --memory 8GB
 ```
-(login op https://192.168.64.6:8443/console als developer/anypass  of syste/admin )
 
 
 
