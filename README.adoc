@@ -51,7 +51,7 @@ minishift start --memory 8GB
 
 
 == References:
-link:https://istio.io/docs/setup/kubernetes/quick-start/:[https://istio.io/docs/setup/kubernetes/quick-start/] +
-link:https://medium.com/devopslinks/istio-step-by-step-part-01-introduction-to-istio-b9fd0df30a9e:[https://medium.com/devopslinks/istio-step-by-step-part-01-introduction-to-istio-b9fd0df30a9e] +
-link:https://developers.redhat.com/books/introducing-istio-service-mesh-microservices/:[https://developers.redhat.com/books/introducing-istio-service-mesh-microservices/]
+link:https://istio.io/docs/setup/kubernetes/quick-start[https://istio.io/docs/setup/kubernetes/quick-start/] +
+link:https://medium.com/devopslinks/istio-step-by-step-part-01-introduction-to-istio-b9fd0df30a9e[https://medium.com/devopslinks/istio-step-by-step-part-01-introduction-to-istio-b9fd0df30a9e] +
+link:https://developers.redhat.com/books/introducing-istio-service-mesh-microservices/[https://developers.redhat.com/books/introducing-istio-service-mesh-microservices/]
 
