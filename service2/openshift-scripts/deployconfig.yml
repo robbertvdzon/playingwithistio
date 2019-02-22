@@ -1,0 +1,37 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    run: service2
+  name: service2
+  namespace: myproject
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    run: service2
+  strategy:
+    activeDeadlineSeconds: 21600
+    resources: {}
+    type: Rolling
+  template:
+    metadata:
+      labels:
+        run: service2
+    spec:
+      containers:
+        - image: 'service2:v1'
+          imagePullPolicy: IfNotPresent
+          name: service2
+          ports:
+            - containerPort: 9096
+              protocol: TCP
+          resources: {}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+  test: false
+  triggers:
+    - type: ConfigChange

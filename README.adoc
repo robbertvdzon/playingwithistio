@@ -35,25 +35,37 @@ oc get svc -n istio-system
 oc get pods -n istio-system
 
 ```
+== Test: Build images
+```
+./build1.sh
+./build2.sh
+
+
+== Test: Deploy sample pods without sidecar
+```
+oc login -u system:admin
+oc create -f service1/openshift-scripts/deployconfig.yml -n myproject
+oc create -f service1/openshift-scripts/service.yml -n myproject
+oc create -f service2/openshift-scripts/deployconfig.yml -n myproject
+oc create -f service2/openshift-scripts/service.yml -n myproject
+
+
 
 == Test: Deploy sample pods with sidecar
 ```
-cd service1
-./mvnw package
 oc login -u system:admin
-eval $(minishift docker-env)
-docker build -t service1:v1 .
-minishift ssh docker images | grep service1
-
 export PATH="$PATH:~/istio-1.0.6/bin"
 #kubectl label namespace default istio-injection=enabled --overwrite
-istioctl kube-inject -f openshift-scripts/deployconfig.yml | oc create -n myproject -f -
-# Note: running without the sidecar would be like this: oc create -f openshift-scripts/deployconfig.yml -n myproject
+istioctl kube-inject -f service1/openshift-scripts/deployconfig.yml | oc create -n myproject -f -
+istioctl kube-inject -f service2/openshift-scripts/deployconfig.yml | oc create -n myproject -f -
 
 ```
 
 == Delete the sample pods
-oc delete -f openshift-scripts/deployconfig.yml -n myproject
+oc delete -f service1/openshift-scripts/service.yml -n myproject
+oc delete -f service1/openshift-scripts/deployconfig.yml -n myproject
+oc delete -f service2/openshift-scripts/service.yml -n myproject
+oc delete -f service2/openshift-scripts/deployconfig.yml -n myproject
 
 
 
