@@ -1,130 +1,41 @@
 = PLAYING WITH ISTIO
-```
-Setup following the steps from:
-https://github.com/redhat-developer-demos/istio-tutorial/blob/book-1.0.4/documentation/modules/ROOT/pages/1setup.adoc
-```
-
-
-== Cleanup old installation
-
-=== Delete Istio on minishift:
-```
-oc delete -f install/kubernetes/istio-demo-auth.yaml
-```
-
-=== Delete minishift:
-```
-minishift delete
-rm -rf ~.minishift/
-rm -rf ~/.kube
-```
-
-=== Reset docker
-In the docker preferences : reset to factory defaults
-
 
 
 == Install minishift:
 ```
-brew install openshift-cli
-brew install kubernetes-cli
 brew cask install minishift
-
-
-#minishift profile set istio-tutorial
-minishift config set memory 8GB
-minishift config set cpus 3
-minishift config set vm-driver virtualbox ## or kvm, for Fedora
-minishift config set image-caching true
-minishift config set openshift-version v3.11.0
-minishift addon enable admin-user
-minishift addon enable anyuid
-
-minishift start
-minishift ssh -- sudo setenforce 0
+brew cask reinstall minishift
+minishift start --memory 8GB
 ```
-
-
-
-== Setup environment
-eval $(minishift oc-env)
-eval $(minishift docker-env)
-oc login $(minishift ip):8443 -u admin -p admin
+(login op https://192.168.64.6:8443/console als developer/anypass  of syste/admin )
 
 
 == Installing Minishift and Istio
 ```
 cd
 curl -L https://git.io/getLatestIstio | sh -
-export PATH="$PATH:~/istio-1.0.6/bin"
+export PATH="$PATH:/Users/robbert/istio-1.0.6/bin"
 cd ~/istio-1.0.6/
+oc login -u system:admin
+
+oc adm policy add-scc-to-user anyuid -z istio-egressgateway-service-account -n istio-system
+oc adm policy add-scc-to-user anyuid -z istio-citadel-service-account -n istio-system
+oc adm policy add-scc-to-user anyuid -z istio-ingressgateway-service-account -n istio-system
+oc adm policy add-scc-to-user anyuid -z istio-cleanup-old-ca-service-account -n istio-system
+oc adm policy add-scc-to-user anyuid -z istio-mixer-post-install-account -n istio-system
+oc adm policy add-scc-to-user anyuid -z istio-mixer-service-account -n istio-system
+oc adm policy add-scc-to-user anyuid -z istio-pilot-service-account -n istio-system
+oc adm policy add-scc-to-user anyuid -z istio-sidecar-injector-service-account -n istio-system
+oc adm policy add-scc-to-user anyuid -z istio-galley-service-account -n istio-system
+oc adm policy add-scc-to-user anyuid -z prometheus -n istio-system
+oc adm policy add-scc-to-user privileged -z default -n myproject
 
 oc apply -f install/kubernetes/helm/istio/templates/crds.yaml
-oc apply -f install/kubernetes/istio-demo.yaml
-oc project istio-system
-oc expose svc istio-ingressgateway
-oc expose svc servicegraph
-oc expose svc grafana
-oc expose svc prometheus
-oc expose svc tracing
+oc apply -f install/kubernetes/istio-demo-auth.yaml
 oc get svc -n istio-system
 oc get pods -n istio-system
-```
-
-== Login op openshift
-```
-minishift console
-(a browser is started, login as admin/admin)
-```
-
-== Run tutorial samples
-```
-oc new-project tutorial
-oc adm policy add-scc-to-user privileged -z default -n tutorial
-
-cd ~/git
-git clone https://github.com/redhat-developer-demos/istio-tutorial
-cd istio-tutorial
-
-
-cd customer/java/springboot
-mvn clean package
-docker build -t example/customer .
-docker images | grep customer
-oc apply -f <(istioctl kube-inject -f ../../kubernetes/Deployment.yml) -n tutorial
-oc create -f ../../kubernetes/Service.yml -n tutorial
-oc expose service customer -n tutorial
-oc get route -n tutorial
-oc get pods -w -n tutorial
-
-
-# build preference
-cd ../../..
-cd preference/java/springboot
-mvn clean package
-docker build -t example/preference:v1 .
-docker images | grep preference
-oc apply -f <(istioctl kube-inject -f ../../kubernetes/Deployment.yml) -n tutorial
-oc create -f ../../kubernetes/Service.yml
-
-# build recommendations
-cd ../../..
-cd recommendation/java/vertx
-mvn clean package
-docker build -t example/recommendation:v1 .
-docker images | grep recommendation
-
-oc apply -f <(istioctl kube-inject -f ../../kubernetes/Deployment.yml) -n tutorial
-oc create -f ../../kubernetes/Service.yml -n tutorial
-oc get pods -w
-
-# test apps
-curl customer-tutorial.$(minishift ip).nip.io
 
 ```
-
-
-
 == Test: Build images
 ```
 ./build1.sh
