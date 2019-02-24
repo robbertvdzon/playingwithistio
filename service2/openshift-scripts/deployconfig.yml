@@ -24,7 +24,7 @@ spec:
           imagePullPolicy: IfNotPresent
           name: service2
           ports:
-            - containerPort: 9096
+            - containerPort: 8082
               protocol: TCP
           resources: {}
       dnsPolicy: ClusterFirst
