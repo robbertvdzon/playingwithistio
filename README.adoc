@@ -45,13 +45,6 @@ minishift ssh -- sudo setenforce 0
 ```
 
 
-
-== Setup environment
-eval $(minishift oc-env)
-eval $(minishift docker-env)
-oc login $(minishift ip):8443 -u admin -p admin
-
-
 == Installing Minishift and Istio
 ```
 cd
@@ -71,10 +64,41 @@ oc get svc -n istio-system
 oc get pods -n istio-system
 ```
 
+== Setup environment
+eval $(minishift oc-env)
+eval $(minishift docker-env)
+oc login $(minishift ip):8443 -u admin -p admin
+
+
 == Login op openshift
 ```
 minishift console
 (a browser is started, login as admin/admin)
+```
+== Test: Build images
+```
+./build1.sh
+./build2.sh
+```
+
+== Test: Deploy own sample pods
+```
+oc apply -f <(istioctl kube-inject -f service1/openshift-scripts/deployconfig.yml ) -n tutorial
+oc create -f service1/openshift-scripts/service.yml -n tutorial
+oc expose service service1 -n tutorial
+oc get route -n tutorial
+oc get pods -w -n tutorial
+
+
+oc apply -f <(istioctl kube-inject -f service2/openshift-scripts/deployconfig.yml ) -n tutorial
+oc create -f service2/openshift-scripts/service.yml -n tutorial
+oc expose service service2 -n tutorial
+oc get route -n tutorial
+oc get pods -w -n tutorial
+
+# test apps
+curl service1.$(minishift ip).nip.io/rest
+
 ```
 
 == Run tutorial samples
@@ -125,65 +149,13 @@ curl customer-tutorial.$(minishift ip).nip.io
 
 
 
-== Test: Build images
-```
-./build1.sh
-./build2.sh
 
-
-== Test: Deploy sample pods without sidecar
-```
-oc login -u system:admin
-oc create -f service1/openshift-scripts/deployconfig.yml -n myproject
-oc create -f service1/openshift-scripts/service.yml -n myproject
-oc expose svc/service1
-oc create -f service2/openshift-scripts/deployconfig.yml -n myproject
-oc create -f service2/openshift-scripts/service.yml -n myproject
-oc expose svc/service2
-
-
-
-== Test: Deploy sample pods with sidecar
-```
-oc login -u system:admin
-export PATH="$PATH:~/istio-1.0.6/bin"
-#kubectl label namespace default istio-injection=enabled --overwrite
-
-istioctl kube-inject -f service1/openshift-scripts/deployconfig.yml | oc create -n myproject -f -
-oc create -f service1/openshift-scripts/service.yml -n myproject
-oc expose svc/service1
-
-istioctl kube-inject -f service2/openshift-scripts/deployconfig.yml | oc create -n myproject -f -
-oc create -f service2/openshift-scripts/service.yml -n myproject
-oc expose svc/service2
-
-
-#oc create -f service1/openshift-scripts/gateway.yml -n myproject
-#oc create -f service1/openshift-scripts/virtualservice.yml -n myproject
-
-# get details:
-# oc get virtualservices service1 -o json
-# oc get gateways service1-gateway -o json
-minishift ip
-
-
-```
-
-== Delete the sample pods without istio
+== Delete the sample pods
 ```
 oc delete -f service1/openshift-scripts/service.yml -n myproject
 oc delete -f service1/openshift-scripts/deployconfig.yml -n myproject
 oc delete routes service1
 oc delete -f service2/openshift-scripts/service.yml -n myproject
-oc delete -f service2/openshift-scripts/deployconfig.yml -n myproject
-```
-
-== Delete the sample pods with istio
-```
-oc delete -f service1/openshift-scripts/service.yml -n myproject
-oc delete -f service1/openshift-scripts/gateway.yml -n myproject
-oc delete -f service1/openshift-scripts/virtualservice.yml -n myproject
-oc delete -f service1/openshift-scripts/deployconfig.yml -n myproject
 oc delete -f service2/openshift-scripts/deployconfig.yml -n myproject
 ```
 

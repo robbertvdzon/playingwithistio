@@ -1,37 +1,38 @@
-apiVersion: apps.openshift.io/v1
-kind: DeploymentConfig
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
   labels:
-    run: service2
+    app: service2
+    version: v1
   name: service2
-  namespace: myproject
 spec:
   replicas: 1
-  revisionHistoryLimit: 10
   selector:
-    run: service2
-  strategy:
-    activeDeadlineSeconds: 21600
-    resources: {}
-    type: Rolling
+    matchLabels:
+      app: service2
+      version: v1
   template:
     metadata:
       labels:
-        run: service2
+        app: service2
+        version: v1
     spec:
       containers:
-        - image: 'service2:v1'
+        - env:
+            - name: JAVA_OPTIONS
+              value: -Xms128m -Xmx256m -Djava.net.preferIPv4Stack=true -Djava.security.egd=file:///dev/./urandom
+          image: service2:v1
           imagePullPolicy: IfNotPresent
           name: service2
           ports:
             - containerPort: 8082
+              name: http
               protocol: TCP
-          resources: {}
-      dnsPolicy: ClusterFirst
-      restartPolicy: Always
-      schedulerName: default-scheduler
-      securityContext: {}
-      terminationGracePeriodSeconds: 30
-  test: false
-  triggers:
-    - type: ConfigChange
+            - containerPort: 8778
+              name: jolokia
+              protocol: TCP
+            - containerPort: 9779
+              name: prometheus
+              protocol: TCP
+          securityContext:
+            privileged: false

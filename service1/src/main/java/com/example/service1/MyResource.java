@@ -9,7 +9,7 @@ import org.springframework.web.client.RestTemplate;
 @RestController
 public class MyResource {
 
-  private static final String SERVICE2HOST = "http://service2";
+  private static final String SERVICE2HOST = "http://service2:8082";
 //  private static final String SERVICE2HOST = "http://localhost:8082";
 
   @GetMapping("/rest")
